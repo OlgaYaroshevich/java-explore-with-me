@@ -30,7 +30,8 @@ public class StatsClient {
                 .uri("/hit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(endpointHitDto))
-                .exchange()
+                .retrieve()
+                .toBodilessEntity()
                 .block();
     }
 }
