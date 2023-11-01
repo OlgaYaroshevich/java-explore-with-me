@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.service.user.data.UserDto;
+import ru.practicum.ewm.service.util.exception.BadRequestException;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import javax.validation.constraints.Min;
 import java.util.List;
 
@@ -31,11 +31,11 @@ public class UserControllerAdmin {
         String domain = parts[1];
         String[] domainParts = domain.split(".");
         if(login.length() > 64) {
-            throw new ValidationException("Login is too long");
+            throw new BadRequestException("Login is too long");
         }
         for(String domainPart : domainParts) {
-            if (domain.length() > 64) {
-                throw new ValidationException("Domain part is too long");
+            if (domainPart.length() > 64) {
+                throw new BadRequestException("Domain part is too long");
             }
         }
         return userService.create(userDto);
