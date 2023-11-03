@@ -26,7 +26,7 @@ public class PrivateEventController {
     @PatchMapping("/{eventId}")
     public EventFullDto updateEventInfo(@PathVariable long userId, @PathVariable long eventId,
                                         @Valid @RequestBody EventUpdateUserRequest eventUpdateUserRequest) {
-        return eventService.UpdateByInitiator(userId, eventId, eventUpdateUserRequest);
+        return eventService.updateByInitiator(userId, eventId, eventUpdateUserRequest);
     }
 
     @PatchMapping("/{eventId}/requests")

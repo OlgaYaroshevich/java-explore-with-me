@@ -119,7 +119,7 @@ public class EventService {
     }
 
     @Transactional
-    public EventFullDto UpdateByInitiator(long userId, long eventId, EventUpdateUserRequest eventUpdateUserRequest) {
+    public EventFullDto updateByInitiator(long userId, long eventId, EventUpdateUserRequest eventUpdateUserRequest) {
         Event event = findEventById(eventId);
         checkInitiator(userId, eventId, event.getInitiator().getId());
         if (eventUpdateUserRequest.getEventTimestamp() != null && LocalDateTime.now().plusHours(2).isAfter(eventUpdateUserRequest.getEventTimestamp())) {
