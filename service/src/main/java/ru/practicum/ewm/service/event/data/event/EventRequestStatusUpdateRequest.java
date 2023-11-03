@@ -17,6 +17,7 @@ public class EventRequestStatusUpdateRequest {
     private List<Long> requestIds;
     @NotNull
     private EventRequestStatusUpdateRequest.StateAction status;
+
     public enum StateAction {
         CONFIRMED,
         REJECTED

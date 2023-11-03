@@ -5,8 +5,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.service.event.data.event.EventFullDto;
 import ru.practicum.ewm.service.event.data.event.EventState;
-import ru.practicum.ewm.service.event.data.event.UpdateEventAdminRequest;
-import ru.practicum.ewm.service.event.data.event.UpdateEventUserRequest;
+import ru.practicum.ewm.service.event.data.event.EventUpdateAdminRequest;
+import ru.practicum.ewm.service.util.UtilConstants;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -25,8 +25,8 @@ public class EventControllerAdmin {
     public List<EventFullDto> get(@RequestParam(required = false) List<Long> users,
                                   @RequestParam(required = false) List<EventState> states,
                                   @RequestParam(required = false) List<Long> categories,
-                                  @RequestParam(required = false) @DateTimeFormat(pattern = DATETIME_FORMAT) LocalDateTime rangeStart,
-                                  @RequestParam(required = false) @DateTimeFormat(pattern = DATETIME_FORMAT) LocalDateTime rangeEnd,
+                                  @RequestParam(required = false) @DateTimeFormat(pattern = UtilConstants.DATETIME_FORMAT) LocalDateTime rangeStart,
+                                  @RequestParam(required = false) @DateTimeFormat(pattern = UtilConstants.DATETIME_FORMAT) LocalDateTime rangeEnd,
                                   @Valid @RequestParam(defaultValue = "0") @Min(0) int from,
                                   @Valid @RequestParam(defaultValue = "10") @Min(1) int size) {
         return eventService.getAllByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
@@ -34,7 +34,7 @@ public class EventControllerAdmin {
 
     @PatchMapping("/{eventId}")
     public EventFullDto patch(@PathVariable long eventId,
-                              @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
-        return eventService.patchByAdmin(eventId, updateEventAdminRequest);
+                              @Valid @RequestBody EventUpdateAdminRequest eventUpdateAdminRequest) {
+        return eventService.patchByAdmin(eventId, eventUpdateAdminRequest);
     }
 }

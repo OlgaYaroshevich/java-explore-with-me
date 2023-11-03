@@ -29,11 +29,11 @@ public class UserControllerAdmin {
         String[] parts = userDto.getEmail().split("@");
         String login = parts[0];
         String domain = parts[1];
-        String[] domainParts = domain.split(".");
-        if(login.length() > 64) {
+        String[] domainParts = domain.split("\\.");
+        if (login.length() > 64) {
             throw new BadRequestException("Login is too long");
         }
-        for(String domainPart : domainParts) {
+        for (String domainPart : domainParts) {
             if (domainPart.length() > 64) {
                 throw new BadRequestException("Domain part is too long");
             }
