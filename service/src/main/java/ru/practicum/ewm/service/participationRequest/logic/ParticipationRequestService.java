@@ -2,12 +2,12 @@ package ru.practicum.ewm.service.participationRequest.logic;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.service.event.data.event.Event;
-import ru.practicum.ewm.service.event.data.event.EventRepository;
-import ru.practicum.ewm.service.event.data.event.EventState;
-import ru.practicum.ewm.service.participationRequest.data.*;
-import ru.practicum.ewm.service.user.data.User;
-import ru.practicum.ewm.service.user.data.UserRepository;
+import ru.practicum.ewm.service.event.models.event.Event;
+import ru.practicum.ewm.service.event.models.event.EventRepository;
+import ru.practicum.ewm.service.event.models.event.EventState;
+import ru.practicum.ewm.service.participationRequest.models.*;
+import ru.practicum.ewm.service.user.models.User;
+import ru.practicum.ewm.service.user.models.UserRepository;
 import ru.practicum.ewm.service.util.exception.ConflictException;
 import ru.practicum.ewm.service.util.exception.NotFoundException;
 
@@ -22,26 +22,18 @@ public class ParticipationRequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
-    public List<ParticipationRequestDto> getAll(long userId) {
-        findUserById(userId);
-
-        return participationRequestRepository.findAllByRequesterId(userId).stream()
-                .map(ParticipationRequestMapper.INSTANCE::toDto)
-                .collect(Collectors.toList());
-    }
-
     public ParticipationRequestDto create(long userId, long eventId) {
         User requester = findUserById(userId);
         Event event = findEventById(eventId);
        if (event.getInitiator().getId().equals(userId)) {
-            throw new ConflictException("Event initiator cannot submit a participation request for own event");
+            throw new ConflictException("Инициатор мероприятия не может подать заявку на участие в собственном мероприятии");
         }
         if (!event.getState().equals(EventState.PUBLISHED)) {
-            throw new ConflictException("Cannot participate in an unpublished event");
+            throw new ConflictException("Невозможно принять участие в неопубликованном мероприятии");
         }
         if (event.getParticipantLimit() > 0) {
             if (event.getParticipantLimit() <= participationRequestRepository.countByEventIdAndStatus(eventId, ParticipationRequestState.CONFIRMED)) {
-                throw new ConflictException("The number of participation requests has exceeded the limit for the event");
+                throw new ConflictException("Количество заявок на участие превысило лимит для мероприятия");
             }
         }
         ParticipationRequest participationRequest = new ParticipationRequest();
@@ -52,28 +44,36 @@ public class ParticipationRequestService {
         return ParticipationRequestMapper.INSTANCE.toDto(participationRequestRepository.save(participationRequest));
     }
 
-    public ParticipationRequestDto patch(long userId, long requestId) {
+    public ParticipationRequestDto update(long userId, long requestId) {
         findUserById(userId);
         ParticipationRequest participationRequest = findParticipationRequestById(requestId);
         if (!participationRequest.getRequester().getId().equals(userId)) {
-            throw new NotFoundException("No events available for editing were found");
+            throw new NotFoundException("Не найдено событий, доступных для редактирования.");
         }
         participationRequest.setStatus(ParticipationRequestState.CANCELED);
         return ParticipationRequestMapper.INSTANCE.toDto(participationRequestRepository.save(participationRequest));
     }
 
+    public List<ParticipationRequestDto> getAll(long userId) {
+        findUserById(userId);
+
+        return participationRequestRepository.findAllByRequesterId(userId).stream()
+                .map(ParticipationRequestMapper.INSTANCE::toDto)
+                .collect(Collectors.toList());
+    }
+
     private ParticipationRequest findParticipationRequestById(long id) {
         return participationRequestRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Participation request with id=" + id + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Заявка с id=" + id + " не найдена"));
     }
 
     private User findUserById(long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User with id=" + id + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + id + " не найден"));
     }
 
     private Event findEventById(long id) {
         return eventRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + id + " не найдено"));
     }
 }

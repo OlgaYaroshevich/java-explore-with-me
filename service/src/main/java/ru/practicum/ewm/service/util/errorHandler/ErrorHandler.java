@@ -12,6 +12,7 @@ import ru.practicum.ewm.service.util.exception.ConflictException;
 import ru.practicum.ewm.service.util.exception.NotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -19,79 +20,63 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleBindException(BindException e) {
-        return ApiError.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .reason("Incorrectly made request.")
-                .message("Field: " + e.getFieldError().getField() +
-                        ". Error: " + e.getFieldError().getDefaultMessage() +
-                        ". Value: " + e.getFieldError().getRejectedValue())
-                .errorTimestamp(LocalDateTime.now())
-                .build();
+        return buildApiError(HttpStatus.BAD_REQUEST, "Неправильно составлен запросt.",
+                "Поле: " + Objects.requireNonNull(e.getFieldError()).getField() + ". Ошибка: " + e.getFieldError().getDefaultMessage() +
+                        ". Значение: " + e.getFieldError().getRejectedValue());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleBindException(MissingServletRequestParameterException e) {
-        return ApiError.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .reason("Incorrectly made request.")
-                .message(e.getMessage())
-                .errorTimestamp(LocalDateTime.now())
-                .build();
+    public ApiError handleMissingParameterException(MissingServletRequestParameterException e) {
+        return buildApiError(HttpStatus.BAD_REQUEST, "Неправильно составлен запрос.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleBadRequestException(BadRequestException e) {
-        return ApiError.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .reason("Incorrectly made request.")
-                .message(e.getMessage())
-                .errorTimestamp(LocalDateTime.now())
-                .build();
+    public ApiError handleCustomBadRequestException(BadRequestException e) {
+        return buildApiError(HttpStatus.BAD_REQUEST, "Неправильно составлен запрос.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handleNotFoundException(NotFoundException e) {
-        return ApiError.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .reason("The required object was not found.")
-                .message(e.getMessage())
-                .errorTimestamp(LocalDateTime.now())
-                .build();
+    public ApiError handleCustomNotFoundException(NotFoundException e) {
+        return buildApiError(HttpStatus.NOT_FOUND, "Нужный объект не найден.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleConflictException(ConflictException e) {
-        return ApiError.builder()
-                .status(HttpStatus.FORBIDDEN)
-                .reason("For the requested operation the conditions are not met.")
-                .message(e.getMessage())
-                .errorTimestamp(LocalDateTime.now())
-                .build();
+    public ApiError handleCustomConflictException(ConflictException e) {
+        return buildApiError(HttpStatus.CONFLICT, "Для запрошенной операции условия не выполнены.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        return ApiError.builder()
-                .status(HttpStatus.CONFLICT)
-                .reason("Integrity constraint has been violated.")
-                .message(e.getMessage())
-                .errorTimestamp(LocalDateTime.now())
-                .build();
+        return buildApiError(HttpStatus.CONFLICT, "Ограничение целостности нарушено.", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiError handleUnhandled(Exception e) {
+    public ApiError handleUnhandledException(Exception e) {
+        return buildApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Внутренняя ошибка сервера.",
+                e.getClass() + " - " + e.getMessage(), e.getStackTrace());
+    }
+
+    private ApiError buildApiError(HttpStatus status, String reason, String message) {
         return ApiError.builder()
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .reason("Internal server error.")
-                .message(e.getClass() + " - " + e.getMessage())
-                .errors(e.getStackTrace())
+                .status(status)
+                .reason(reason)
+                .message(message)
+                .errorTimestamp(LocalDateTime.now())
+                .build();
+    }
+
+    private ApiError buildApiError(HttpStatus status, String reason, String message, StackTraceElement[] errors) {
+        return ApiError.builder()
+                .status(status)
+                .reason(reason)
+                .message(message)
+                .errors(errors)
                 .errorTimestamp(LocalDateTime.now())
                 .build();
     }

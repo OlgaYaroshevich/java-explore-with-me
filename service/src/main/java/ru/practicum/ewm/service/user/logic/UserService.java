@@ -6,10 +6,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.service.user.data.User;
-import ru.practicum.ewm.service.user.data.UserDto;
-import ru.practicum.ewm.service.user.data.UserMapper;
-import ru.practicum.ewm.service.user.data.UserRepository;
+import ru.practicum.ewm.service.user.models.User;
+import ru.practicum.ewm.service.user.models.UserDto;
+import ru.practicum.ewm.service.user.models.UserMapper;
+import ru.practicum.ewm.service.user.models.UserRepository;
 import ru.practicum.ewm.service.util.exception.NotFoundException;
 
 import java.util.List;
@@ -19,6 +19,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+
+    @Transactional
+    public UserDto create(UserDto userDto) {
+        return UserMapper.INSTANCE.toDto(userRepository.save(UserMapper.INSTANCE.fromDto(userDto)));
+    }
+
+    @Transactional
+    public void delete(long userId) {
+        findById(userId);
+        userRepository.deleteById(userId);
+    }
 
     @Transactional(readOnly = true)
     public List<UserDto> get(List<Long> ids, int from, int size) {
@@ -34,19 +45,8 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public UserDto create(UserDto userDto) {
-        return UserMapper.INSTANCE.toDto(userRepository.save(UserMapper.INSTANCE.fromDto(userDto)));
-    }
-
-    @Transactional
-    public void delete(long userId) {
-        findById(userId);
-        userRepository.deleteById(userId);
-    }
-
     private User findById(long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User with id=" + id + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + id + " не найден"));
     }
 }
