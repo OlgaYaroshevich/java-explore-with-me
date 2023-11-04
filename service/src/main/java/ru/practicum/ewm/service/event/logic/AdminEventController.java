@@ -1,0 +1,41 @@
+package ru.practicum.ewm.service.event.logic;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.service.event.models.event.EventFullDto;
+import ru.practicum.ewm.service.event.models.event.EventState;
+import ru.practicum.ewm.service.event.models.event.EventUpdateAdminRequest;
+import ru.practicum.ewm.service.util.UtilConstants;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequestMapping(path = "/admin/events")
+@RequiredArgsConstructor
+public class AdminEventController {
+    private static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    private final EventService eventService;
+
+    @GetMapping()
+    public List<EventFullDto> get(@RequestParam(required = false) List<Long> users,
+                                  @RequestParam(required = false) List<EventState> states,
+                                  @RequestParam(required = false) List<Long> categories,
+                                  @RequestParam(required = false) @DateTimeFormat(pattern = UtilConstants.DATETIME_FORMAT) LocalDateTime rangeStart,
+                                  @RequestParam(required = false) @DateTimeFormat(pattern = UtilConstants.DATETIME_FORMAT) LocalDateTime rangeEnd,
+                                  @Valid @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                  @Valid @RequestParam(defaultValue = "10") @Positive int size) {
+        return eventService.getAllByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+    }
+
+    @PatchMapping("/{eventId}")
+    public EventFullDto update(@PathVariable long eventId,
+                               @Valid @RequestBody EventUpdateAdminRequest eventUpdateAdminRequest) {
+        return eventService.updateByAdmin(eventId, eventUpdateAdminRequest);
+    }
+}
