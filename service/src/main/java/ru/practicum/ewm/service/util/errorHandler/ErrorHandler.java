@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.ewm.service.util.exception.BadRequestException;
 import ru.practicum.ewm.service.util.exception.ConflictException;
+import ru.practicum.ewm.service.util.exception.ForbiddenException;
 import ru.practicum.ewm.service.util.exception.NotFoundException;
 
 import java.time.LocalDateTime;
@@ -60,6 +61,13 @@ public class ErrorHandler {
     public ApiError handleUnhandledException(Exception e) {
         return buildApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Внутренняя ошибка сервера.",
                 e.getClass() + " - " + e.getMessage(), e.getStackTrace());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiError handleForbiddenException(ForbiddenException e) {
+        return buildApiError(HttpStatus.FORBIDDEN, "Действие запрещено.",
+                e.getMessage());
     }
 
     private ApiError buildApiError(HttpStatus status, String reason, String message) {
